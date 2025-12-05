@@ -1,6 +1,9 @@
 const express = require("express"); // load the express library
 const app = express(); // creates an express app (backend program), so I can define routes, middlewares, etc.
 
+// adding middleware (code that runs *before* your route handler) to parse JSON in request bodies -> raw text gets converting to JS object and put into `req.body`
+app.use(express.json());
+
 // A basic route for sample API endpoint (just logging route works)
 app.get("/", (req, res) => {
   res.send("Dog Adoption API is running");

@@ -2,7 +2,7 @@
 
 // function that contains the *logic* for what the endpoint should do.
 
-function getDogs(req, res) {
+export function getDogs(req, res) {
   const dogs = [
     { id: 1, name: "Buddy", age: 2, breed: "Labrador" },
     { id: 2, name: "Dolly", age: 3, breed: "Poodle" },
@@ -10,8 +10,3 @@ function getDogs(req, res) {
 
   res.json(dogs); // send the JSON response
 }
-
-// Export the functions
-module.exports = {
-  getDogs,
-};

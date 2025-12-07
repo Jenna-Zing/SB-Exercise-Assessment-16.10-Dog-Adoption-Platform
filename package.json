@@ -1,19 +1,25 @@
 {
-	"name": "dog-adoption-platform-api",
-	"version": "1.0.0",
-	"description": "Dog Adoption Platform API",
-	"main": "app.js",
-	"scripts": {
-		"start": "node app.js",
-		"dev": "nodemon app.js"
-	},
-	"author": "",
-	"license": "ISC",
-	"dependencies": {
-		"cors": "^2.8.5",
-		"express": "^5.2.1"
-	},
-	"devDependencies": {
-		"nodemon": "^3.1.0"
-	}
+  "name": "dog-adoption-platform-api",
+  "version": "1.0.0",
+  "description": "Dog Adoption Platform API",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.0.0",
+    "mongoose": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
 }

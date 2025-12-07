@@ -2,13 +2,29 @@ import { Schema, model } from "mongoose";
 
 const dogSchema = new Schema(
   {
-    id: String,
-    name: String,
-    description: String,
-    registeredUserId: String,
-    originalOwnerMsg: String,
-    ownerUserId: String,
-    adopted: Boolean,
+    // MongoDB generates a unique _id for each document
+    name: {
+      type: String,
+      required: true, // every dog must have a name
+    },
+    description: {
+      type: String,
+      required: true, // every dog must have a description
+    },
+    registeredUserId: {
+      type: String, // user ID wo initially registered the dog
+      required: true,
+    },
+    originalOwnerMsg: {
+      type: String, // optional message from the original owner
+    },
+    ownerUserId: {
+      type: String, // the current owner (null if up for adoption)
+    },
+    adopted: {
+      type: Boolean,
+      default: false, // dogs are not adopted by default
+    },
     /* 
   id string // primary key for dog
   name string
@@ -24,5 +40,5 @@ const dogSchema = new Schema(
   }
 );
 
-const Dog = model("Dog", dogSchema);
-export default Dog;
+// third argument => specifies collection name (aka table name) in MongoDB
+export const Dog = model("Dog", dogSchema, "dog");

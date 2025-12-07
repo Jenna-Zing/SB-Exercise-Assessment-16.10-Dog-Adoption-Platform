@@ -1,5 +1,5 @@
 // Replace this file with the logic for handling incoming requests and returning responses to the client
-import User from "../models/User.js";
+import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -12,33 +12,32 @@ export async function registerUser(req, res) {
   console.log(`${username}, ${password}`);
 
   try {
-    let user;
+    // if username already exists -> error out
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ error: "Username already exists" });
+    }
 
-    bcrypt.hash(password, saltRounds, async function (err, hash) {
-      if (err) throw err;
+    // hash the password
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    console.log(`hashed ${hashedPassword}`);
 
-      console.log(`hashed: ${hash}`);
-
-      // Store hash in your password DB.
-      user = await User.create({ username, password: hash });
-    });
+    // create the user
+    const user = await User.create({ username, password: hashedPassword });
 
     // create sign-up token
-    const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "24h" });
-
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "24h",
+    });
     console.log(`token: ${token}`);
+
     // setup cookie middleware
     res.cookie("jwt", token);
     res.status(201).send("Successfully registered user");
   } catch (err) {
-    console.log(err);
-    res.status(err.status).send(err.message);
+    console.error(err);
+    res.status(400).send(err.message);
   }
-  // if username already exists -> error out
-
-  // hash and salt the PW (encrypt)
-
-  // insert username and hashed pw into user table
 }
 
 // #2

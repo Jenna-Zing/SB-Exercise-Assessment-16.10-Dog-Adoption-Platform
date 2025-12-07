@@ -2,11 +2,7 @@ import { Schema, model } from "mongoose";
 
 const userSchema = new Schema(
   {
-    id: {
-      type: String,
-      unique: true,
-      required: true,
-    },
+    // MongoDB generates a unique _id for each document
     username: {
       type: String,
       unique: true,
@@ -27,5 +23,5 @@ const userSchema = new Schema(
   }
 );
 
-export const User = model("User", userSchema);
-export default User;
+// third argument => specifies collection name (aka table name) in MongoDB
+export const User = model("User", userSchema, "user");

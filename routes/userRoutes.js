@@ -6,4 +6,5 @@ import * as userController from "../controllers/userController.js";
 
 // Define routes (endpoints + method + controller)
 router.post("/register", userController.registerUser);
+router.post("/login", userController.loginUser);
 // router.get("/", userController.getDogs); // e.g. GET /dogs

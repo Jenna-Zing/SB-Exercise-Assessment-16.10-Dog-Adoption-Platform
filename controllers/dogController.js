@@ -52,6 +52,12 @@ export async function adoptDog(req, res) {
   const adopterId = req.user._id; // currently logged in user -> pulled from JWT in auth middleware
 
   try {
+    if (!dogId) {
+      return res
+        .status(400)
+        .json({ error: "Dog ID is required in the request URL." });
+    }
+
     // 1. Find the dog record
     const dog = await Dog.findById(dogId);
     if (!dog) {
@@ -93,6 +99,52 @@ export async function adoptDog(req, res) {
   }
 }
 
+// 5. Removing Dogs: Owners can remove their registered dogs from the platform unless the dog has been adopted. Users cannot remove dogs registered by others.
+export async function removeDog(req, res) {
+  const dogId = req.params.id;
+  const userId = req.user._id; // currently logged in user -> pulled from JWT in auth middleware
+
+  try {
+    if (!dogId) {
+      return res
+        .status(400)
+        .json({ error: "Dog ID is required in the request URL." });
+    }
+
+    // 1. Find the dog by its ID
+    const dog = await Dog.findById(dogId);
+    if (!dog) {
+      return res
+        .status(404)
+        .json({ error: `No dog with an id: ${dogId} was found.` });
+    }
+
+    // 2. RESTRICTION: Users cannot remove dogs registered by others.
+    if (dog.registeredUserId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        error: "You cannot remove a dog that was registered by another user.",
+      });
+    }
+
+    // 3. RESTRICTION:  Owners cannot remove their registered dogs from the platform if the dog has been adopted
+    if (dog.adopted) {
+      return res.status(400).json({
+        error: "You cannot remove a dog that has already been adopted!",
+      });
+    }
+
+    // 4. Remove the dog
+    await Dog.findByIdAndDelete(dogId);
+
+    return res.status(200).json({
+      message: `Your dog, ${dog.name}, has been successfully removed from the platform.`,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 // 6. Listing Registered Dogs: Authenticated users can list dogs they've registered, with support for filtering by status and pagination.
 export async function getRegisteredDogs(req, res) {
   try {
@@ -127,6 +179,37 @@ export async function getRegisteredDogs(req, res) {
     console.log(dogs);
 
     res.status(200).send({ page: pageNumber, dogs });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+// 7. Listing Adopted Dogs: Authenticated users can list dogs they've adopted, with pagination support.
+
+export async function getAdoptedDogs(req, res) {
+  try {
+    // get user ID from your authentication middleware - for filtering
+    const userId = req.user._id;
+
+    // pagination defaults - optional query parameter (e.g. ".../registeredDogs?page=1")
+    const pageNumber = Number(req.query.page) || 1; // defaults to page 1
+    const ITEMS_PER_PAGE = 2; // TODO ASK:  should this be an optional query param or stored globally somewhere like at top of file as const, and potentially max limit?
+    console.log(pageNumber);
+
+    // calculate offset based on page number and item limit
+    const offset = (pageNumber - 1) * ITEMS_PER_PAGE;
+
+    // FILTERING
+    const filter = { ownerUserId: userId, adopted: true }; // only dogs adopted by the current user
+
+    // fetch dogs
+    const adoptedDogs = await Dog.find(filter)
+      .skip(offset)
+      .limit(ITEMS_PER_PAGE);
+    console.log(adoptedDogs);
+
+    res.status(200).send({ page: pageNumber, dogs: adoptedDogs });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });

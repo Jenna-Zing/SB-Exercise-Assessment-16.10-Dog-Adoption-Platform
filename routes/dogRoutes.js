@@ -10,11 +10,18 @@ import { rateLimitingMiddleware } from "../middlewares/rateLimitingMiddleware.js
 // Define routes (endpoints + method + controller)
 router.get("/", dogController.getDogs); // e.g. GET /dogs
 router.post("/registerDog", authenticate, dogController.registerDog);
+router.post("/adoptDog/:id", authenticate, dogController.adoptDog); // ".../adoptDog/420jfdlajf"
+router.delete("/removeDog/:id", authenticate, dogController.removeDog); // "...removeDog/420jfdlajf"
+
 router.get(
   "/registeredDogs",
   authenticate,
   rateLimitingMiddleware,
   dogController.getRegisteredDogs
 ); // ".../registeredDogs?page=1"
-
-router.post("/adoptDog/:id", authenticate, dogController.adoptDog); // ".../adoptDog/420jfdlajf"
+router.get(
+  "/adoptedDogs",
+  authenticate,
+  rateLimitingMiddleware,
+  dogController.getAdoptedDogs
+); // ".../adoptedDogs?page=1"

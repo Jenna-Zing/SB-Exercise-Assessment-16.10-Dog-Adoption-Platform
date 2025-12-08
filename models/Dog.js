@@ -16,10 +16,12 @@ const dogSchema = new Schema(
       required: true,
     },
     originalOwnerMsg: {
-      type: String, // optional message from the original owner
+      type: String, // optional thank-you message -> filled in at adoption time
+      default: "", // when a dog is adopted, if not supplied, default to empty
     },
     ownerUserId: {
       type: String, // the current owner (null if up for adoption)
+      default: null, // adopter user ID -> only assigned after adoption
     },
     adopted: {
       type: Boolean,

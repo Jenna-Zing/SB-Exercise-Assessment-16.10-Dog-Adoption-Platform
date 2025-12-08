@@ -13,6 +13,7 @@ export function getDogs(req, res) {
   res.json(dogs); // send the JSON response
 }
 
+// 3. Dog Registration: Authenticated users can register dogs awaiting adoption, providing a name and a brief description.
 export async function registerDog(req, res) {
   const { name, description } = req.body;
 
@@ -43,16 +44,42 @@ export async function registerDog(req, res) {
   }
 }
 
+// 6. Listing Registered Dogs: Authenticated users can list dogs they've registered, with support for filtering by status and pagination.
 export async function getRegisteredDogs(req, res) {
-  const pageNumber = req.query.page;
-  const ITEMS_PER_PAGE = 2;
-  console.log(pageNumber);
+  try {
+    // get user ID from your authentication middleware - for filtering
+    const userId = req.user._id;
 
-  // calculate offset based on page number and item limit
-  const offset = (pageNumber - 1) * ITEMS_PER_PAGE;
+    // pagination defaults - optional query parameter (e.g. ".../registeredDogs?page=1")
+    const pageNumber = Number(req.query.page) || 1; // defaults to page 1
+    const ITEMS_PER_PAGE = 2;
+    console.log(pageNumber);
 
-  const dogs = await Dog.find().skip(offset).limit(ITEMS_PER_PAGE);
-  console.log(dogs);
+    // calculate offset based on page number and item limit
+    const offset = (pageNumber - 1) * ITEMS_PER_PAGE;
 
-  res.status(200).send(dogs);
+    // FILTERING
+    const filter = { registeredUserId: userId }; // only this user's registered dogs
+
+    // add adopted filter ONLY if provided
+    const adoptedQuery = req.query.adopted;
+    if (adoptedQuery !== undefined) {
+      if (adoptedQuery !== "true" && adoptedQuery !== "false") {
+        return res
+          .status(400)
+          .json({ error: "Invalid adopted value.  Use true or false." });
+      }
+
+      filter.adopted = adoptedQuery === "true"; // converts string to boolean
+    }
+
+    // fetch dogs
+    const dogs = await Dog.find(filter).skip(offset).limit(ITEMS_PER_PAGE);
+    console.log(dogs);
+
+    res.status(200).send({ page: pageNumber, dogs });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 }

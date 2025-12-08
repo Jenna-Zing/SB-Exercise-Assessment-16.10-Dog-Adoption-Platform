@@ -44,6 +44,55 @@ export async function registerDog(req, res) {
   }
 }
 
+// 4. Dog Adoption: Authenticated users can adopt a dog by its ID, including a thank-you message for the original owner. Restrictions apply: a dog already adopted cannot be adopted again, and users cannot adopt dogs they registered.
+export async function adoptDog(req, res) {
+  // e.g. dogs/adopt/420jfdlajf (just the portion in ObjectId)
+  const dogId = req.params.id;
+  const { message } = req.body;
+  const adopterId = req.user._id; // currently logged in user -> pulled from JWT in auth middleware
+
+  try {
+    // 1. Find the dog record
+    const dog = await Dog.findById(dogId);
+    if (!dog) {
+      // cannot adopt a dog if its record doesn't exist / cannot be found
+      return res
+        .status(404)
+        .json({ error: `No dog with an id: ${dogId} was found.` });
+    }
+
+    // 2. RESTRICTION: Users cannot adopt dogs they registered.
+    if (dog.registeredUserId.toString() === adopterId.toString()) {
+      return res.status(400).json({
+        error: "You cannot adopt a dog that you registered!",
+      });
+    }
+
+    // 3. RESTRICTION: Prevent users from adopting a dog that is already adopted.
+    if (dog.adopted === true) {
+      return res.status(400).json({
+        error: "This dog has already been adopted.",
+      });
+    }
+
+    // 4. Perform adoption by updating the dog's record
+    dog.ownerUserId = adopterId;
+    dog.originalOwnerMsg = message || ""; // if message is not supplied, default to empty string
+    dog.adopted = true;
+
+    await dog.save();
+
+    console.log(dog);
+
+    return res.status(200).json({
+      message: `Congratulations! You adopted ${dog.name}!`,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 // 6. Listing Registered Dogs: Authenticated users can list dogs they've registered, with support for filtering by status and pagination.
 export async function getRegisteredDogs(req, res) {
   try {
@@ -52,7 +101,7 @@ export async function getRegisteredDogs(req, res) {
 
     // pagination defaults - optional query parameter (e.g. ".../registeredDogs?page=1")
     const pageNumber = Number(req.query.page) || 1; // defaults to page 1
-    const ITEMS_PER_PAGE = 2;
+    const ITEMS_PER_PAGE = 2; // TODO ASK:  should this be an optional query param or stored globally somewhere like at top of file as const, and potentially max limit?
     console.log(pageNumber);
 
     // calculate offset based on page number and item limit

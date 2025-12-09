@@ -44,7 +44,7 @@ export async function registerUser(req, res) {
     res.status(201).send("Successfully registered user");
   } catch (err) {
     console.error(err);
-    res.status(400).send(err.message);
+    res.status(500).json({ error: "Internal server error" });
   }
 }
 

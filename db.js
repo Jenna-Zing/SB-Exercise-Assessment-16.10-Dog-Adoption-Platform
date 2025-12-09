@@ -1,6 +1,11 @@
+/* 
+  DB.JS - Connects to the database
+  - handles the database connection
+  - can be called from either `server.js` or tests..
+  - reads connection info from process.env (using dotenv -> relies on `app.js` or `tests` to call them before it runs)
+*/
+
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-dotenv.config(); // allows you to use .env variables
 
 export async function connectDB() {
   try {

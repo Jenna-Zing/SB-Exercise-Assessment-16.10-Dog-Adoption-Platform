@@ -2,6 +2,21 @@
 
 Springboard SE Bootcamp - Assessment Exercise - 16.10 Dog Adoption Platform
 
+## Important Notes
+
+- To run the server, run `npm run dev`.
+- To run the tests, run `npm run test`, which will trigger my integration tests for the endpoints.
+- For manual testing with Postman. . . run `npm run dev`, then try hitting any of the endpoints.
+  - Note to self: In Postman, you'll need to copy the JWT token generated -> outputted to console.log (you won't see it in Postman), from when you run `http://localhost:3000/user/login`, and pass in a Body: `{ "username": "sampleUser", "password": "samplePassword" }`, for any of the dogRoutes that require the middleware authenticate.
+  - To hit protected endpoints - e.g. any from dogRoutes, which require authenticate, you'll need to copy the JWT token from `http://localhost:3000/user/login` into "Bearer Token"
+    - ![alt text](postman-authToken.png)
+  - To test the rate limiting endpoint, hit `http://localhost:3000/dogs/registeredDogs?page=2` rapidly - I have it set so the cooldown is 3 seconds, so you should see error 429 till the cooldown has passed and the user record is wiped by setTimeout.
+    - ![alt text](postman-rateLimit.png)
+  - To sum up, dogRoutes API's will require you to have logged-in as per authenticate middleware and pass in either req.body, optional req.query parameters, or required req.param arguments.. Whereas, userRoutes API's will require req.body to get the username and password.
+  - WARNING: the `tests` are comparing by ObjectId due to querying by mongoose, so they fail if I do not `.toString()` them... But for my dogController.js - I can compare `originalOwnerId` and `adopterId`, etc. because it's always the `decoded.id` which is a string. Thus, my tests must be stricter in converting them for type-matching.
+
+---
+
 The folder structure designed by our software architects ensures adherence to best practices:
 
 - `controllers`: Contains the logic for handling incoming requests and returning responses to the client.

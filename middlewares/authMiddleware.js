@@ -10,7 +10,8 @@ import jwt from "jsonwebtoken";
 /* ASK:  What are the best things to put in a authMiddleware by convention?
 e.g. data validation , password salting, checking if username exists, etc. */
 
-export async function authenticate(req, res, next) {
+// ENSURES A USER IS LOGGED IN AND HAS THE COOKIE WITH JWT FROM LOGIN
+export async function authMiddleware(req, res, next) {
   try {
     const token = req.cookies.jwt;
 

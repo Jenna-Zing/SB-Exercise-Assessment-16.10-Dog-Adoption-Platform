@@ -4,38 +4,38 @@ export const router = express.Router(); // Creates a new Router instance
 
 // import your dogController!
 import * as dogController from "../controllers/dogController.js";
-import { authenticate } from "../middlewares/authMiddleware.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { rateLimitingMiddleware } from "../middlewares/rateLimitingMiddleware.js";
 
 // Define routes (endpoints + method + controller)
 router.post(
   "/registerDog",
-  authenticate,
+  authMiddleware,
   rateLimitingMiddleware,
   dogController.registerDog
 );
 router.post(
   "/adoptDog/:id",
-  authenticate,
+  authMiddleware,
   rateLimitingMiddleware,
   dogController.adoptDog
 ); // ".../adoptDog/420jfdlajf"
 router.delete(
   "/removeDog/:id",
-  authenticate,
+  authMiddleware,
   rateLimitingMiddleware,
   dogController.removeDog
 ); // "...removeDog/420jfdlajf"
 
 router.get(
   "/registeredDogs",
-  authenticate,
+  authMiddleware,
   rateLimitingMiddleware,
   dogController.getRegisteredDogs
 ); // ".../registeredDogs?page=1"
 router.get(
   "/adoptedDogs",
-  authenticate,
+  authMiddleware,
   rateLimitingMiddleware,
   dogController.getAdoptedDogs
 ); // ".../adoptedDogs?page=1"

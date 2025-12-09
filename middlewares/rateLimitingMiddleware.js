@@ -52,5 +52,7 @@ export async function rateLimitingMiddleware(req, res, next) {
   // 4. Still in cooldown -> block
   return res
     .status(429)
-    .json({ error: `Too many requests.  Retry after ${cooldownSeconds}` });
+    .json({
+      error: `Too many requests.  Retry after ${cooldownSeconds} seconds.`,
+    });
 }

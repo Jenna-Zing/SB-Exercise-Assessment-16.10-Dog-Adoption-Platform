@@ -23,7 +23,7 @@ export async function authMiddleware(req, res, next) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.userId = decoded.id;
+    req.userId = decoded.id; // always returns string due to JWT storing only plain JSON
     console.log(req.userId);
     next(); // continue to the controller
   } catch (err) {

@@ -54,7 +54,7 @@ export async function adoptDog(req, res) {
     }
 
     // 2. RESTRICTION: Users cannot adopt dogs they registered.
-    if (dog.originalOwnerId.toString() === adopterId.toString()) {
+    if (dog.originalOwnerId === adopterId) {
       return res.status(400).json({
         error: "You cannot adopt a dog that you registered!",
       });
@@ -100,7 +100,7 @@ export async function removeDog(req, res) {
     }
 
     // 2. RESTRICTION: Users cannot remove dogs registered by others.
-    if (dog.originalOwnerId.toString() !== userId.toString()) {
+    if (dog.originalOwnerId !== userId) {
       return res.status(403).json({
         error: "You cannot remove a dog that was registered by another user.",
       });

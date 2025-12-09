@@ -44,12 +44,6 @@ export async function adoptDog(req, res) {
   const adopterId = req.userId; // currently logged in user -> pulled from JWT in auth middleware
 
   try {
-    if (!dogId) {
-      return res
-        .status(400)
-        .json({ error: "Dog ID is required in the request URL." });
-    }
-
     // 1. Find the dog record
     const dog = await Dog.findById(dogId);
     if (!dog) {
@@ -97,12 +91,6 @@ export async function removeDog(req, res) {
   const userId = req.userId; // currently logged in user -> pulled from JWT in auth middleware
 
   try {
-    if (!dogId) {
-      return res
-        .status(400)
-        .json({ error: "Dog ID is required in the request URL." });
-    }
-
     // 1. Find the dog by its ID
     const dog = await Dog.findById(dogId);
     if (!dog) {
@@ -177,7 +165,6 @@ export async function getRegisteredDogs(req, res) {
 }
 
 // 7. Listing Adopted Dogs: Authenticated users can list dogs they've adopted, with pagination support.
-
 export async function getAdoptedDogs(req, res) {
   try {
     // get user ID from your authentication middleware - for filtering

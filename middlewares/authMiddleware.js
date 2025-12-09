@@ -22,13 +22,8 @@ export async function authenticate(req, res, next) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // find the user in the database
-    const user = await User.findById(decoded.id);
-    if (!user) {
-      return res.status(401).json({ error: "Invalid token" });
-    }
-
-    req.user = user; // attach user to request
+    req.userId = decoded.id;
+    console.log(req.userId);
     next(); // continue to the controller
   } catch (err) {
     console.error(err);

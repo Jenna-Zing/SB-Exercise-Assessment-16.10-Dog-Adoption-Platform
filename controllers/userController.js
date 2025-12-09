@@ -9,10 +9,17 @@ const saltRounds = 10;
 
 // 1. User Registration: Allow users to register with a username and password. Passwords should be hashed before storing in the database.
 export async function registerUser(req, res) {
-  const { username, password } = req.body;
-  console.log(`${username}, ${password}`);
-
   try {
+    const { username, password } = req.body;
+    console.log(`${username}, ${password}`);
+
+    // Validate required fields - if undefined or null, and not empty string, return error
+    if (!username?.trim() || !password?.trim()) {
+      return res
+        .status(400)
+        .json({ error: "Username and password are required." });
+    }
+
     // if username already exists -> error out
     const existingUser = await User.findOne({ username });
     if (existingUser) {
@@ -43,10 +50,17 @@ export async function registerUser(req, res) {
 
 // 2. User Authentication: Enable users to log in using their credentials. Upon login, issue a token valid for 24 hours for subsequent authenticated requests.
 export async function loginUser(req, res) {
-  const { username, password } = req.body;
-  console.log(`${username}, ${password}`);
-
   try {
+    const { username, password } = req.body;
+    console.log(`${username}, ${password}`);
+
+    // Validate required fields - if undefined or null, and not empty string, return error
+    if (!username?.trim() || !password?.trim()) {
+      return res
+        .status(400)
+        .json({ error: "Username and password are required." });
+    }
+
     // Find the user record in the DB
     const existingUser = await User.findOne({ username });
     if (!existingUser) {

@@ -12,11 +12,6 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    /* 
-      id string [primary key, note: 'could be auto-increment id, or uuid generated on insert']
-      username string
-      password string
-    */
   },
   {
     timestamps: true,

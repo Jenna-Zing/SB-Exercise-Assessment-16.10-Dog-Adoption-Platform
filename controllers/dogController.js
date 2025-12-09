@@ -3,15 +3,7 @@
 import { Dog } from "../models/Dog.js";
 
 // function that contains the *logic* for what the endpoint should do.
-
-export function getDogs(req, res) {
-  const dogs = [
-    { id: 1, name: "Buddy", age: 2, breed: "Labrador" },
-    { id: 2, name: "Dolly", age: 3, breed: "Poodle" },
-  ];
-
-  res.json(dogs); // send the JSON response
-}
+const ITEMS_PER_PAGE = 2;
 
 // 3. Dog Registration: Authenticated users can register dogs awaiting adoption, providing a name and a brief description.
 export async function registerDog(req, res) {
@@ -29,9 +21,9 @@ export async function registerDog(req, res) {
     const dog = await Dog.create({
       name,
       description,
-      registeredUserId: req.user._id, // logged-in user ID
-      originalOwnerMsg: null, // the adopter will supply this for the person who registered the dog
-      ownerUserId: null, // null because dog is not adopted yet
+      originalOwnerId: req.userId, // logged-in user ID
+      msgForOriginalOwner: null, // the adopter will supply this for the person who registered the dog
+      currentOwnerId: null, // null because dog is not adopted yet
       adopted: false,
     });
 
@@ -49,7 +41,7 @@ export async function adoptDog(req, res) {
   // e.g. dogs/adopt/420jfdlajf (just the portion in ObjectId)
   const dogId = req.params.id;
   const { message } = req.body;
-  const adopterId = req.user._id; // currently logged in user -> pulled from JWT in auth middleware
+  const adopterId = req.userId; // currently logged in user -> pulled from JWT in auth middleware
 
   try {
     if (!dogId) {
@@ -68,7 +60,7 @@ export async function adoptDog(req, res) {
     }
 
     // 2. RESTRICTION: Users cannot adopt dogs they registered.
-    if (dog.registeredUserId.toString() === adopterId.toString()) {
+    if (dog.originalOwnerId.toString() === adopterId.toString()) {
       return res.status(400).json({
         error: "You cannot adopt a dog that you registered!",
       });
@@ -82,8 +74,8 @@ export async function adoptDog(req, res) {
     }
 
     // 4. Perform adoption by updating the dog's record
-    dog.ownerUserId = adopterId;
-    dog.originalOwnerMsg = message || ""; // if message is not supplied, default to empty string
+    dog.currentOwnerId = adopterId;
+    dog.msgForOriginalOwner = message || ""; // if message is not supplied, default to empty string
     dog.adopted = true;
 
     await dog.save();
@@ -102,7 +94,7 @@ export async function adoptDog(req, res) {
 // 5. Removing Dogs: Owners can remove their registered dogs from the platform unless the dog has been adopted. Users cannot remove dogs registered by others.
 export async function removeDog(req, res) {
   const dogId = req.params.id;
-  const userId = req.user._id; // currently logged in user -> pulled from JWT in auth middleware
+  const userId = req.userId; // currently logged in user -> pulled from JWT in auth middleware
 
   try {
     if (!dogId) {
@@ -120,7 +112,7 @@ export async function removeDog(req, res) {
     }
 
     // 2. RESTRICTION: Users cannot remove dogs registered by others.
-    if (dog.registeredUserId.toString() !== userId.toString()) {
+    if (dog.originalOwnerId.toString() !== userId.toString()) {
       return res.status(403).json({
         error: "You cannot remove a dog that was registered by another user.",
       });
@@ -149,18 +141,17 @@ export async function removeDog(req, res) {
 export async function getRegisteredDogs(req, res) {
   try {
     // get user ID from your authentication middleware - for filtering
-    const userId = req.user._id;
+    const userId = req.userId;
 
     // pagination defaults - optional query parameter (e.g. ".../registeredDogs?page=1")
     const pageNumber = Number(req.query.page) || 1; // defaults to page 1
-    const ITEMS_PER_PAGE = 2; // TODO ASK:  should this be an optional query param or stored globally somewhere like at top of file as const, and potentially max limit?
     console.log(pageNumber);
 
     // calculate offset based on page number and item limit
     const offset = (pageNumber - 1) * ITEMS_PER_PAGE;
 
     // FILTERING
-    const filter = { registeredUserId: userId }; // only this user's registered dogs
+    const filter = { originalOwnerId: userId }; // only th currently logged-in user's registered dogs
 
     // add adopted filter ONLY if provided
     const adoptedQuery = req.query.adopted;
@@ -190,18 +181,17 @@ export async function getRegisteredDogs(req, res) {
 export async function getAdoptedDogs(req, res) {
   try {
     // get user ID from your authentication middleware - for filtering
-    const userId = req.user._id;
+    const userId = req.userId;
 
     // pagination defaults - optional query parameter (e.g. ".../registeredDogs?page=1")
     const pageNumber = Number(req.query.page) || 1; // defaults to page 1
-    const ITEMS_PER_PAGE = 2; // TODO ASK:  should this be an optional query param or stored globally somewhere like at top of file as const, and potentially max limit?
     console.log(pageNumber);
 
     // calculate offset based on page number and item limit
     const offset = (pageNumber - 1) * ITEMS_PER_PAGE;
 
     // FILTERING
-    const filter = { ownerUserId: userId, adopted: true }; // only dogs adopted by the current user
+    const filter = { currentOwnerId: userId, adopted: true }; // only dogs adopted by the current user
 
     // fetch dogs
     const adoptedDogs = await Dog.find(filter)
